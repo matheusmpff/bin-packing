@@ -15,7 +15,7 @@ relic_costs = relics[:,COST]
 
 #Cria as variáveis binárias m_jk
 m = []
-for j in range (12):
+for j in range (6):
     aux = []
     for k in range(5):
         if(j >= j_limits[k]):
@@ -28,7 +28,7 @@ for j in range (12):
 x = []
 for i in range(5):
     aux = []
-    for j in range(12):
+    for j in range(6):
         linha = []
         for k in range(5):
             if(j >= j_limits[k]):
