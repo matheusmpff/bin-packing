@@ -43,7 +43,7 @@ for k in range(5):
     for j in range(j_limits[k]):
         multiplied_x = []
         for i in range(5):
-            multiplied_x.append(relic_weights[k]*x[i][j][k])
+            multiplied_x.append(relic_weights[i]*x[i][j][k])
         model.addConstr(gp.quicksum(multiplied_x)<= backpack_weights[k]*m[j][k])
 
 # Restrições de volume
@@ -51,13 +51,21 @@ for k in range(5):
     for j in range(j_limits[k]):
         multiplied_x = []
         for i in range(5):
-            multiplied_x.append(relic_volumes[k]*x[i][j][k])
+            multiplied_x.append(relic_volumes[i]*x[i][j][k])
         model.addConstr(gp.quicksum(multiplied_x)<= backpack_volumes[k]*m[j][k])
+
+#Restrições para quantidade de reliquias
+for i in range(5):
+    terms= []
+    for k in range(5):
+        for j in range(j_limits[k]):
+            terms.append(x[i][j][k])
+    model.addConstr(gp.quicksum(terms)<= 4)
 
 # Restrições de custo máximo
 multiplied_m = []
 for k in range(5):
     for j in range(j_limits[k]):
-        multiplied_m.append(relic_costs[k]*m[j][k])
+        multiplied_m.append(backpack_costs[k]*m[j][k])
 
 model.addConstr(gp.quicksum(multiplied_m)<= C_MAX)
