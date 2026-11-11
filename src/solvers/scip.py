@@ -3,6 +3,15 @@ from src.common import *
 
 model = Model("コンチ")
 
+j_limits = backpacks[:, QUANTITY]
+backpack_weights = backpacks[:,WEIGHT]
+backpack_volumes = backpacks[:,VOLUME]
+backpack_costs = backpacks[:,COST]
+
+relic_weights = relics[:,WEIGHT]
+relic_volumes = relics[:,VOLUME]
+relic_costs = relics[:,COST]
+
 m = []
 
 # variáveis das mochilas no modelo
@@ -34,10 +43,38 @@ y = model.addVar(name="y", vtype="B")
 model.setObjective(m[0][0] + m[0][1] + m[0][2] + m[0][3] + m[0][4] + m[1][0] + m[1][1] + m[1][2] + m[2][0] + m[2][1] + m[3][0] + m[3][1] + m[3][2] + m[3][3] + m[3][4] + m[3][5] + m[4][0] + m[4][1] + m[4][2] + m[4][3])
 
 # restrição de peso
-
 for k in range(len(backpacks)):
     for j in range(backpacks[k][0]):
-        model.addCons(quicksum(relics[i][1] * x[i][k][j] for i in range(len(relics))) <= backpacks[k][1] * m[k][j])
+        model.addCons(quicksum(relic_weights[i] * x[i][k][j] for i in range(len(relics))) <= backpack_weights[k] * m[k][j])
+
+# restrição volume
+for k in range(len(backpacks)):
+    for j in range(backpacks[k][0]):
+        model.addCons(quicksum(relic_volumes[i] * x[i][k][j] for i in range(len(relics))) <= backpack_volumes[k] * m[k][j])
+
+#Restrições para quantidade de reliquias
+for i in range(5):
+    terms= []
+    for k in range(5):
+        for j in range(j_limits[k]):
+            terms.append(x[i][k][j])
+    model.addCons(quicksum(terms) == 4)
+
+# Restrições de custo máximo
+multiplied_m = []
+for k in range(5):
+    for j in range(j_limits[k]):
+        multiplied_m.append(backpack_costs[k]*m[k][j])
+
+model.addCons(quicksum(multiplied_m)<= C_MAX)
+
+# Restrições para o valor dentro da mochila
+for k in range(5):
+    for j in range(j_limits[k]):
+        multiplied_x = []
+        for i in range(5):
+            multiplied_x.append(relic_costs[i]*x[i][k][j])
+        model.addCons(quicksum(multiplied_x)<= 45000* m[k][j]) 
 
 
 # restrição destinatário
