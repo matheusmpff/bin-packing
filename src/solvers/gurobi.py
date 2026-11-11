@@ -69,3 +69,22 @@ for k in range(5):
         multiplied_m.append(backpack_costs[k]*m[j][k])
 
 model.addConstr(gp.quicksum(multiplied_m)<= C_MAX)
+
+# Restrições para o valor dentro da mochila
+for k in range(5):
+    for j in range(j_limits[k]):
+        multiplied_x = []
+        for i in range(5):
+            multiplied_x.append(relic_costs[i]*x[i][j][k])
+        model.addConstr(gp.quicksum(multiplied_x)<= 45000* m[j][k])
+ 
+#Define função objetivo       
+all_ms = gp.quicksum(
+    m[j][k]
+    for k in range(5)
+    for j in range(j_limits[5])
+)
+model.setObjective(all_ms,GRB.MIIMIZE)
+
+#Executa Otimização
+model.optimize()
