@@ -60,7 +60,7 @@ for i in range(5):
     for k in range(5):
         for j in range(j_limits[k]):
             terms.append(x[i][j][k])
-    model.addConstr(gp.quicksum(terms)<= 4)
+    model.addConstr(gp.quicksum(terms) == 4)
 
 # Restrições de custo máximo
 multiplied_m = []
@@ -82,9 +82,17 @@ for k in range(5):
 all_ms = gp.quicksum(
     m[j][k]
     for k in range(5)
-    for j in range(j_limits[5])
+    for j in range(j_limits[k])
 )
-model.setObjective(all_ms,GRB.MIIMIZE)
+model.setObjective(all_ms,GRB.MINIMIZE)
 
 #Executa Otimização
 model.optimize()
+
+if model.status == GRB.OPTIMAL:
+    print(f"Encontramos uma solução otima = {model.objVal} mochila(s) utilizada(s)")
+    for v in model.getVars():
+        print(f"{v.VarName} = {v.x}") if v.x != 0 else None
+    
+else:
+    print("Não achamos solução")
