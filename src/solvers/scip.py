@@ -1,52 +1,70 @@
-from pyscipopt import Model
+from pyscipopt import Model, quicksum
 from src.common import * 
 
 model = Model("コンチ")
 
 m = []
 
-# adiciona variáveis das mochilas no modelo
+# variáveis das mochilas no modelo
+# note que a ordem das listas é tipo da mochila e depois número da mochila
+
 for k in range(len(backpacks)):
     bag_num = []
-    for j in range(backpacks[i][0]):
-        bag_tipe[j] = model.addVar(name=f"m{j}{k}", vtype="B")
-    m[k] = bag_num
+    for j in range(backpacks[k][0]):
+        bag_num.append(model.addVar(name=f"m_{j}{k}", vtype="B"))
+        print(f"Adicionei m{j}{k}")
+    m.append(bag_num)
 
+# variáveis das relíquias
+# note que a ordem em que coloquei as listas foi: tipo, tipo da mochila e número (j-ésima) da mochila
 
 x = []
 for i in range(len(relics)):
     bag_type = []
     for k in range(len(backpacks)):
         bag_num = []
-        for j in range(backpacks[i][0]):
-            bag_num[j] = model.addVar(name=f"x{i}{j}{k}", vtype="I")
-        bag_type[k] = bag_num
-    x[i] = bag_type
+        for j in range(backpacks[k][0]):
+            bag_num.append(model.addVar(name=f"x_{i}{j}{k}", vtype="I"))
+            print(f"Adicionei x{i}{j}{k}")
+        bag_type.append(bag_num)
+    x.append(bag_type)
 
 y = model.addVar(name="y", vtype="B")
 
-model.setObjective(m[0][0] + m[0][1] + m[0][2] + m[0][3] + m[0][4] + m[0][5] + m[0][6] + m[0][7] + m[0][8] + m[0][9] + m[1][0] + m[1][1] + m[1][2] + m[1][3] + m[1][4] + m[1][5] + m[2][0] + m[2][1] + m[2][2] + m[2][3] + m[3][0] + m[3][1] + m[3][2] + m[3][3] + m[3][4] + m[3][5] + m[3][6] + m[3][7] + m[3][8] + m[3][9] + m[3][10] + m[3][11] + m[4][0] + m[4][1] + m[4][2] + m[4][3] + m[4][4] + m[4][5] + m[4][6] + m[4][7])
+model.setObjective(m[0][0] + m[0][1] + m[0][2] + m[0][3] + m[0][4] + m[1][0] + m[1][1] + m[1][2] + m[2][0] + m[2][1] + m[3][0] + m[3][1] + m[3][2] + m[3][3] + m[3][4] + m[3][5] + m[4][0] + m[4][1] + m[4][2] + m[4][3])
 
-# daqui pra baixo copiei de exer do runcodes
+# restrição de peso
+
+for k in range(len(backpacks)):
+    for j in range(backpacks[k][0]):
+        model.addCons(quicksum(relics[i][1] * x[i][k][j] for i in range(len(relics))) <= backpacks[k][1] * m[k][j])
 
 
-model.addCons(5 * x1 + x2 <= 100)
-model.addCons(x1 + -1 * x2 <= 15)
-model.addCons(-1 * x1 + 12 * x2 <= 225)
-model.addCons(-1 * x1 + -1 * x2 <= -10)
-model.addCons(x1 <= 20)
-model.addCons(x2 <= 20)
+# restrição destinatário
+num_relics_Muzza = [1, 1, 0, 2, 0]
+for i in range(5):
+    if num_relics_Muzza[i] != 0:
+        model.addCons(x[i][3][0] <= num_relics_Muzza[i] + 10000 * y)
+        model.addCons(-1 * x[i][3][0] <= -1 * num_relics_Muzza[i] + 10000 * y)
 
-model.addCons(x1 >= 0)
-model.addCons(x2 >= 0)
+        model.addCons(x[i][4][0] <= num_relics_Muzza[i] + 10000 * (1 - y))
+        model.addCons(-1 * x[i][4][0] <= -1 * num_relics_Muzza[i] + 10000 * (1 - y))
+    else:
+        model.addCons(x[i][3][0] <= 10000 * y)
 
-model.hideOutput()
+        model.addCons(x[i][4][0] <= 10000 * (1 - y))
+        
+
+
+# variáveis das relíquias: garantir positividade
+for i in range(len(relics)):
+    for k in range(len(backpacks)):
+        for j in range(backpacks[k][0]):
+            model.addCons(x[i][k][j] >= 0)
+
+# model.hideOutput()
 # model.setMaximize()
 model.optimize()
 
 solution = model.getObjVal()
-x1_sol = model.getVal(x1)
-x2_sol = model.getVal(x2)
 print("{:}".format(round(solution, 2)))
-print("{:}".format(round(x1_sol, 2)))
-print("{:}".format(round(x2_sol, 2)))
