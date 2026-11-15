@@ -1,5 +1,6 @@
 from pyscipopt import Model, quicksum
 from src.common import * 
+import json
 
 model = Model("コンチ")
 
@@ -79,18 +80,18 @@ for k in range(backpack_tnum):
 
 
 # restrição destinatário
-num_relics_Muzza = [1, 1, 0, 2, 0]
-for i in range(5):
-    if num_relics_Muzza[i] != 0:
-        model.addCons(x[i][3][0] <= num_relics_Muzza[i] + 10000 * y)
-        model.addCons(-1 * x[i][3][0] <= -1 * num_relics_Muzza[i] + 10000 * y)
+# num_relics_Muzza = [1, 1, 0, 2, 0]
+# for i in range(5):
+#     if num_relics_Muzza[i] != 0:
+#         model.addCons(x[i][3][0] <= num_relics_Muzza[i] + 10000 * y)
+#         model.addCons(-1 * x[i][3][0] <= -1 * num_relics_Muzza[i] + 10000 * y)
 
-        model.addCons(x[i][4][0] <= num_relics_Muzza[i] + 10000 * (1 - y))
-        model.addCons(-1 * x[i][4][0] <= -1 * num_relics_Muzza[i] + 10000 * (1 - y))
-    else:
-        model.addCons(x[i][3][0] <= 10000 * y)
+#         model.addCons(x[i][4][0] <= num_relics_Muzza[i] + 10000 * (1 - y))
+#         model.addCons(-1 * x[i][4][0] <= -1 * num_relics_Muzza[i] + 10000 * (1 - y))
+#     else:
+#         model.addCons(x[i][3][0] <= 10000 * y)
 
-        model.addCons(x[i][4][0] <= 10000 * (1 - y))
+#         model.addCons(x[i][4][0] <= 10000 * (1 - y))
 
 
 # variáveis das relíquias: garantir positividade
@@ -102,6 +103,38 @@ for i in range(relic_tnum):
 # model.hideOutput()
 # model.setMaximize()
 model.optimize()
+# solution = model.getObjVal()
 
-solution = model.getObjVal()
-print(f"Solução: {solution} mochilas")
+resultado = {
+    "caixas_utilizadas": []
+}
+if model.getStatus() == "optimal":
+    print(f"Encontramos uma solução otima = {model.getObjVal()} mochila(s) utilizada(s)")
+    varDict = model.getVarDict()
+    for scip_var_name, scip_var_value in varDict.items():
+        print(f"{scip_var_name} = {scip_var_value}") if scip_var_value != 0 else None
+    
+    for k in range(backpack_tnum):
+        for j in range(j_limits[k]):
+            backpack_value = varDict[f"m_{j}{k}"]
+            if backpack_value !=0:
+                caixa = {
+                    "numero":j +1,
+                    "tipo": k + 1,
+                    "reliquias":{
+                    }
+                }
+                for i in range(relic_tnum):
+                    relic_value = varDict[f"x_{i}{j}{k}"]
+                    if relic_value !=0:
+                        caixa["reliquias"][i+1] = relic_value 
+                        
+                resultado["caixas_utilizadas"].append(caixa)   
+    
+    with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
+        json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
+    
+          
+                
+else:
+    print("Não achamos solução")
