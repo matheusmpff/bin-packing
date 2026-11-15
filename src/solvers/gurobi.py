@@ -1,6 +1,7 @@
 import gurobipy as gp
 from src.common import * 
 from gurobipy import GRB
+import json
 
 model = gp.Model("model")
 
@@ -89,10 +90,36 @@ model.setObjective(all_ms,GRB.MINIMIZE)
 #Executa Otimização
 model.optimize()
 
+
+resultado = {
+    "caixas_utilizadas": []
+}
 if model.status == GRB.OPTIMAL:
     print(f"Encontramos uma solução otima = {model.objVal} mochila(s) utilizada(s)")
     for v in model.getVars():
         print(f"{v.VarName} = {v.x}") if v.x != 0 else None
     
+    for k in range(5):
+        for j in range(j_limits[k]):
+            m = model.getVarByName(f"m_{j}{k}")
+            if m.X !=0:
+                caixa = {
+                    "numero":j +1,
+                    "tipo": k + 1,
+                    "reliquias":{
+                    }
+                }
+                for i in range(5):
+                    x = model.getVarByName(f"x_{i}{j}{k}")
+                    if x.X !=0:
+                        caixa["reliquias"][i+1] = x.X 
+                        
+                resultado["caixas_utilizadas"].append(caixa)   
+    
+    with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
+        json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
+    
+          
+                
 else:
     print("Não achamos solução")
