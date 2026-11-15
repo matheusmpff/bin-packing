@@ -92,7 +92,8 @@ model.optimize()
 
 
 resultado = {
-    "caixas_utilizadas": []
+    "caixas_utilizadas": [],
+    "tempo": 0.0
 }
 if model.status == GRB.OPTIMAL:
     print(f"Encontramos uma solução otima = {model.objVal} mochila(s) utilizada(s)")
@@ -115,7 +116,7 @@ if model.status == GRB.OPTIMAL:
                         caixa["reliquias"][i+1] = x.X 
                         
                 resultado["caixas_utilizadas"].append(caixa)   
-    
+
     with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     

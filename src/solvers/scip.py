@@ -106,7 +106,8 @@ model.optimize()
 # solution = model.getObjVal()
 
 resultado = {
-    "caixas_utilizadas": []
+    "caixas_utilizadas": [],
+    "tempo": 0.0
 }
 if model.getStatus() == "optimal":
     print(f"Encontramos uma solução otima = {model.getObjVal()} mochila(s) utilizada(s)")
@@ -131,7 +132,8 @@ if model.getStatus() == "optimal":
                         
                 resultado["caixas_utilizadas"].append(caixa)   
     
-    with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
+    resultado["tempo"] = model.getSolvingTime()
+    with open("resultado_scip.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
           
