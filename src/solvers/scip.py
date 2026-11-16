@@ -107,7 +107,8 @@ model.optimize()
 
 resultado = {
     "caixas_utilizadas": [],
-    "tempo": 0.0
+    "tempo": 0.0,
+    "iteracoes_simplex": 0
 }
 if model.getStatus() == "optimal":
     print(f"Encontramos uma solução otima = {model.getObjVal()} mochila(s) utilizada(s)")
@@ -132,8 +133,17 @@ if model.getStatus() == "optimal":
                         
                 resultado["caixas_utilizadas"].append(caixa)   
     
-    resultado["tempo"] = model.getSolvingTime()
     resultado["num_caixas"] = model.getObjVal()
+    resultado["iteracoes_simplex"] = model.getNLPIterations()
+
+    model.hideOutput()
+    tempo_soma = 0.0
+    for i in range(10):
+        model.freeTransform()
+        model.optimize()
+        tempo_soma += model.getSolvingTime()
+
+    resultado["tempo"] = tempo_soma / 10
     with open("resultado_scip.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
