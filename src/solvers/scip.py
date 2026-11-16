@@ -133,6 +133,7 @@ if model.getStatus() == "optimal":
                 resultado["caixas_utilizadas"].append(caixa)   
     
     resultado["tempo"] = model.getSolvingTime()
+    resultado["num_caixas"] = model.getObjVal()
     with open("resultado_scip.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
