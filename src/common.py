@@ -40,21 +40,14 @@ relics = np.array([
 ])
 
 def split_random(limit, n_elements):
-    if n_elements == 1:
-        return [limit]
-
-    rand_num = random.randrange(1, limit)
-
-    if n_elements == 2:
-        return [rand_num, limit - rand_num]
-
-    else:
-        first = split_random(rand_num, n_elements // 2)
-        last = split_random(limit - rand_num, n_elements // 2 + n_elements % 2)
-
-        return first.append(last)
-        
-
+    result = [1] * n_elements
+    
+    for i in range(limit-n_elements):
+        index = random.randrange(n_elements)
+        result[index]+=1
+    
+    return result
+      
 # sed is the seed, for the randomness to be reproducible
 # num is the number of backpacks
 def create_attr(sed, num):
@@ -92,4 +85,5 @@ def create_attr(sed, num):
 
     return (backpacks, relics)
 
-backpack_scip(create_attr(1, 40))
+#backpack_scip(backpacks,relics)
+backpack_scip(*create_attr(1, 40))
