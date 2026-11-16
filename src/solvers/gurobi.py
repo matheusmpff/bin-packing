@@ -96,7 +96,7 @@ resultado = {
     "tempo": 0.0
 }
 if model.status == GRB.OPTIMAL:
-    print(f"Encontramos uma solução otima = {model.objVal} mochila(s) utilizada(s)")
+    print(f"Encontramos uma solução otima = {model.objVal} caixa(s) utilizada(s)")
     for v in model.getVars():
         print(f"{v.VarName} = {v.x}") if v.x != 0 else None
     
@@ -117,6 +117,8 @@ if model.status == GRB.OPTIMAL:
                         
                 resultado["caixas_utilizadas"].append(caixa)   
 
+    resultado["tempo"] = model.Runtime
+    resultado["iteracoes_simplex"] = model.IterCount
     with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
