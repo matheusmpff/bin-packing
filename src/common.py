@@ -1,4 +1,7 @@
 import numpy as np
+import random
+
+from src.solvers.scip import backpack_scip
 #Custo máximo para gastar com mochilas
 C_MAX = 1100
 
@@ -35,3 +38,58 @@ relics = np.array([
     [4,10,5,18000],
     [4,15,4,30000]
 ])
+
+def split_random(limit, n_elements):
+    if n_elements == 1:
+        return [limit]
+
+    rand_num = random.randrange(1, limit)
+
+    if n_elements == 2:
+        return [rand_num, limit - rand_num]
+
+    else:
+        first = split_random(rand_num, n_elements // 2)
+        last = split_random(limit - rand_num, n_elements // 2 + n_elements % 2)
+
+        return first.append(last)
+        
+
+# sed is the seed, for the randomness to be reproducible
+# num is the number of backpacks
+def create_attr(sed, num):
+    random.seed(sed)
+
+    """
+    Armazena os dados dos 5 tipos de mochilas.
+
+    Colunas:
+    quantidade | Peso Máx (Kg) | Volume Max (L) | Preço (R$)
+    """
+    backpack_quants = split_random(num, 5)
+    backpacks =np.array( [
+        [backpack_quants[0],20,25,120],
+        [backpack_quants[1],25,10,135],
+        [backpack_quants[2],40,30,240],
+        [backpack_quants[3],30,15,180],
+        [backpack_quants[4],15,8,105]
+    ])
+
+    """
+    Armazena os dados dos 5 tipos de Relíquias.
+
+    Colunas:
+    quantidade | Peso Máx (Kg) | Volume Max (L) | Preço (R$)
+    """
+    relic_quants = split_random(num, 5)
+    relics = np.array([
+        [relic_quants[0],4,2,1000],
+        [relic_quants[1],6,3,1200],
+        [relic_quants[2],1,1,24000],
+        [relic_quants[3],10,5,18000],
+        [relic_quants[4],15,4,30000]
+    ])
+
+    return (backpacks, relics)
+
+backpack_scip(create_attr(1, 40))
