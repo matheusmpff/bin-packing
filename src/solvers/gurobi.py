@@ -119,6 +119,7 @@ if model.status == GRB.OPTIMAL:
 
     resultado["tempo"] = model.Runtime
     resultado["iteracoes_simplex"] = model.IterCount
+    resultado["num_caixas"] = model.ObjVal
     with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
