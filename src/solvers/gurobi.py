@@ -117,9 +117,16 @@ if model.status == GRB.OPTIMAL:
                         
                 resultado["caixas_utilizadas"].append(caixa)   
 
-    resultado["tempo"] = model.Runtime
+    
     resultado["iteracoes_simplex"] = model.IterCount
     resultado["num_caixas"] = model.ObjVal
+    
+    tempo_soma = 0.0
+    for i in range(10):
+        model.reset()
+        model.optimize()
+        tempo_soma += model.Runtime
+    resultado["tempo"] = tempo_soma/10
     with open("resultado_gurobi.json","w",encoding="utf-8") as arquivo:
         json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
