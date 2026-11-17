@@ -40,16 +40,16 @@ relics = np.array([
     [4,15,4,30000]
 ])
 
-def split_random(limit, n_elements):
-    result = [1] * n_elements
-   
-    for i in range(limit-n_elements):
-        index = random.randrange(n_elements)
-        result[index]+=1
-    
-    return result
+#def split_random(limit, n_elements):
+#    result = [1] * n_elements
+#   
+#    for i in range(limit-n_elements):
+#        index = random.randrange(n_elements)
+#        result[index]+=1
+#    
+#    return result
       
-"""def split_random(limit, n_elements):
+def split_random(limit, n_elements):
     if n_elements == 1:
         return [limit]
 
@@ -65,7 +65,7 @@ def split_random(limit, n_elements):
         last = split_random(limit - rand_num, n_elements // 2 + n_elements % 2)
         print(last)
 
-        return first + last"""
+        return first + last
     
         
 # sed is the seed, for the randomness to be reproducible
@@ -107,6 +107,7 @@ def create_attr(sed, num):
     return (backpacks, relics)
 
 backpack_gurobi(backpacks,relics)
+backpack_scip(backpacks,relics)
 backpacks , relics = create_attr(1, 100)
 backpack_gurobi(backpacks,relics)
 backpack_scip(backpacks,relics)
