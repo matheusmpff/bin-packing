@@ -91,7 +91,13 @@ def backpack_scip(backpacks, relics):
             multiplied_x = []
             for i in range(5):
                 multiplied_x.append(relic_costs[i] * x[i][k][j])
-            model.addCons(quicksum(multiplied_x) <= 45000 * m[k][j]) 
+            model.addCons(quicksum(multiplied_x) <= 45000 * m[k][j])
+
+    # quebra de simetria
+    for k in range(backpack_tnum):
+        for j in range(1, backpacks[k][0]):
+            model.addCons(m[k][j] <= m[k][j - 1])
+    
 
 
     # restrição destinatário
@@ -110,10 +116,10 @@ def backpack_scip(backpacks, relics):
 
 
     # variáveis das relíquias: garantir positividade
-    for i in range(relic_tnum):
-        for k in range(len(backpacks)):
-            for j in range(j_limits[k]):
-                model.addCons(x[i][k][j] >= 0)
+    # for i in range(relic_tnum):
+    #     for k in range(len(backpacks)):
+    #         for j in range(j_limits[k]):
+    #             model.addCons(x[i][k][j] >= 0)
 
     # model.hideOutput()
     # model.setMaximize()
