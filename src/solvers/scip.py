@@ -2,7 +2,17 @@ from pyscipopt import Model, quicksum
 # from src.common import * 
 import json
 
+# Colunas das mochilas
+QUANTITY = 0
+WEIGHT = 1
+VOLUME = 2
+COST = 3
+
 def backpack_scip(backpacks, relics):
+    C_MAX = 1100 # Caso em que fazemos com 20 reliquias apenas
+    total_relics = relics[:,QUANTITY].sum()
+    if total_relics != 20:
+        C_MAX = (backpacks[:,COST]*backpacks[:,QUANTITY]).sum()*0.6 
     
     model = Model("コンチ")
 
@@ -14,11 +24,13 @@ def backpack_scip(backpacks, relics):
     backpack_costs = backpacks[:,COST]
 
     relic_tnum = len(relics)
+    relic_quantity = relics[:, QUANTITY]
     relic_weights = relics[:,WEIGHT]
     relic_volumes = relics[:,VOLUME]
     relic_costs = relics[:,COST]
 
     m = []
+    obj_sum = []
 
     # variáveis das mochilas no modelo
     # note que a ordem das listas é tipo da mochila e depois número da mochila
@@ -26,7 +38,8 @@ def backpack_scip(backpacks, relics):
     for k in range(backpack_tnum):
         bag_num = []
         for j in range(backpacks[k][0]):
-            bag_num.append(model.addVar(name=f"m_{j}{k}", vtype="B"))
+            bag_num.append(model.addVar(name=f"m_{j}_{k}", vtype="B"))
+            obj_sum.append(bag_num[j])
         m.append(bag_num)
 
     # variáveis das relíquias
@@ -38,13 +51,13 @@ def backpack_scip(backpacks, relics):
         for k in range(backpack_tnum):
             bag_num = []
             for j in range(backpacks[k][0]):
-                bag_num.append(model.addVar(name=f"x_{i}{j}{k}", vtype="I"))
+                bag_num.append(model.addVar(name=f"x_{i}_{j}_{k}", vtype="I"))
             bag_type.append(bag_num)
         x.append(bag_type)
 
     y = model.addVar(name="y", vtype="B")
 
-    model.setObjective(m[0][0] + m[0][1] + m[0][2] + m[0][3] + m[0][4] + m[1][0] + m[1][1] + m[1][2] + m[2][0] + m[2][1] + m[3][0] + m[3][1] + m[3][2] + m[3][3] + m[3][4] + m[3][5] + m[4][0] + m[4][1] + m[4][2] + m[4][3])
+    model.setObjective(quicksum(obj_sum))
 
     # restrição de peso
     for k in range(backpack_tnum):
@@ -62,7 +75,7 @@ def backpack_scip(backpacks, relics):
         for k in range(backpack_tnum):
             for j in range(j_limits[k]):
                 terms.append(x[i][k][j])
-        model.addCons(quicksum(terms) == 4)
+        model.addCons(quicksum(terms) == relic_quantity[i])
 
     # Restrições de custo máximo
     multiplied_m = []
@@ -104,6 +117,7 @@ def backpack_scip(backpacks, relics):
 
     # model.hideOutput()
     # model.setMaximize()
+    model.setParam('limits/time', 60)
     model.optimize()
     # solution = model.getObjVal()
 
@@ -112,7 +126,7 @@ def backpack_scip(backpacks, relics):
         "tempo": 0.0,
         "iteracoes_simplex": 0
     }
-    if model.getStatus() == "optimal":
+    if model.getStatus() == "optimal" or model.getStatus() == "timelimit":
         print(f"Encontramos uma solução otima = {model.getObjVal()} mochila(s) utilizada(s)")
         varDict = model.getVarDict()
         for scip_var_name, scip_var_value in varDict.items():
@@ -120,7 +134,7 @@ def backpack_scip(backpacks, relics):
     
         for k in range(backpack_tnum):
             for j in range(j_limits[k]):
-                backpack_value = varDict[f"m_{j}{k}"]
+                backpack_value = varDict[f"m_{j}_{k}"]
                 if backpack_value !=0:
                     caixa = {
                         "numero":j +1,
@@ -129,7 +143,7 @@ def backpack_scip(backpacks, relics):
                         }
                     }
                     for i in range(relic_tnum):
-                        relic_value = varDict[f"x_{i}{j}{k}"]
+                        relic_value = varDict[f"x_{i}_{j}_{k}"]
                         if relic_value !=0:
                             caixa["reliquias"][i+1] = relic_value 
                         
@@ -137,19 +151,25 @@ def backpack_scip(backpacks, relics):
     
         resultado["num_caixas"] = model.getObjVal()
         resultado["iteracoes_simplex"] = model.getNLPIterations()
+        resultado["status"] = model.getStatus()
+        resultado["gap"] = model.getGap()
+        resultado["tempo"] = model.getSolvingTime()
 
-        model.hideOutput()
-        tempo_soma = 0.0
-        for i in range(10):
-            model.freeTransform()
-            model.optimize()
-            tempo_soma += model.getSolvingTime()
+        # model.hideOutput()
+        # tempo_soma = 0.0
+        # for i in range(10):
+        #     model.freeTransform()
+        #     model.optimize()
+        #     tempo_soma += model.getSolvingTime()
 
-        resultado["tempo"] = tempo_soma / 10
+        # resultado["tempo"] = tempo_soma / 10
+
         with open("resultado_scip.json","w",encoding="utf-8") as arquivo:
             json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
           
-                
-    else:
-        print("Não achamos solução")
+    if model.getStatus() == "infeasible":
+        print("solução inviável")
+    
+    if model.getStatus() == "unbounded":
+        print("Função objetivo decresce indefinidamente")
