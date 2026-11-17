@@ -102,6 +102,12 @@ def backpack_gurobi(backpacks, relics):
             for i in range(5):
                 multiplied_x.append(relic_costs[i]*x[i][j][k])
             model.addConstr(gp.quicksum(multiplied_x)<= 45000* m[j][k])
+            
+    # Quebra de simetria
+    
+    for k in range(5):
+        for j in range (j_limits[k]-1):
+            model.addConstr(m[j+1][k] <= m[j][k])
     
     #Define função objetivo
          
