@@ -2,6 +2,7 @@ import numpy as np
 import random
 
 from src.solvers.scip import backpack_scip
+from src.solvers.gurobi import backpack_gurobi
 #Custo máximo para gastar com mochilas
 C_MAX = 1100
 
@@ -85,5 +86,5 @@ def create_attr(sed, num):
 
     return (backpacks, relics)
 
-#backpack_scip(backpacks,relics)
-backpack_scip(*create_attr(1, 40))
+#backpack_gurobi(backpacks,relics)
+backpack_gurobi(*create_attr(1, 500))
