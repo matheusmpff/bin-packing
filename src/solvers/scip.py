@@ -14,6 +14,7 @@ def backpack_scip(backpacks, relics):
         C_MAX = (backpacks[:,COST]*backpacks[:,QUANTITY]).sum()*0.6 
     
     model = Model("コンチ")
+    model.setParam("parallel/maxnthreads",1)
 
     # number of types of backpacks
     backpack_tnum = len(backpacks)
@@ -50,11 +51,11 @@ def backpack_scip(backpacks, relics):
         for k in range(backpack_tnum):
             bag_num = []
             for j in range(backpacks[k][0]):
-                bag_num.append(model.addVar(name=f"x_{i}_{j}_{k}", vtype="I"))
+                bag_num.append(model.addVar(name=f"x_{i}_{j}_{k}",lb=0, vtype="I"))
             bag_type.append(bag_num)
         x.append(bag_type)
 
-    y = model.addVar(name="y", vtype="B")
+    #y = model.addVar(name="y", vtype="B")
 
     model.setObjective(quicksum(obj_sum))
 
@@ -130,23 +131,23 @@ def backpack_scip(backpacks, relics):
         varDict = model.getVarDict()
         for scip_var_name, scip_var_value in varDict.items():
             print(f"{scip_var_name} = {scip_var_value}") if scip_var_value != 0 else None
-    
-        for k in range(backpack_tnum):
-            for j in range(j_limits[k]):
-                backpack_value = varDict[f"m_{j}_{k}"]
-                if backpack_value !=0:
-                    caixa = {
-                        "numero":j +1,
-                        "tipo": k + 1,
-                        "reliquias":{
+        if total_relics == 20:
+            for k in range(backpack_tnum):
+                for j in range(j_limits[k]):
+                    backpack_value = varDict[f"m_{j}_{k}"]
+                    if backpack_value !=0:
+                        caixa = {
+                            "numero":j +1,
+                            "tipo": k + 1,
+                            "reliquias":{
+                            }
                         }
-                    }
-                    for i in range(relic_tnum):
-                        relic_value = varDict[f"x_{i}_{j}_{k}"]
-                        if relic_value !=0:
-                            caixa["reliquias"][i+1] = relic_value 
-                        
-                    resultado["caixas_utilizadas"].append(caixa)   
+                        for i in range(relic_tnum):
+                            relic_value = varDict[f"x_{i}_{j}_{k}"]
+                            if relic_value !=0:
+                                caixa["reliquias"][i+1] = relic_value 
+                            
+                        resultado["caixas_utilizadas"].append(caixa)   
     
         resultado["num_caixas"] = model.getObjVal()
         resultado["iteracoes_simplex"] = model.getNLPIterations()
@@ -163,7 +164,7 @@ def backpack_scip(backpacks, relics):
 
         # resultado["tempo"] = tempo_soma / 10
 
-        with open("resultado_scip.json","w",encoding="utf-8") as arquivo:
+        with open(f"resultado_scip_{total_relics}.json","w",encoding="utf-8") as arquivo:
             json.dump(resultado,arquivo,indent=4,ensure_ascii=False)
     
           

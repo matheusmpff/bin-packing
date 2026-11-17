@@ -18,7 +18,7 @@ def backpack_gurobi(backpacks, relics):
     #Configura o modelo para limite de 10 segundos e 1 thread
     
     model = gp.Model("model")
-    model.Params.TimeLimit = 10
+    model.Params.TimeLimit = 60
     model.Params.Threads = 1
 
     # Dados das caixas e reliquias
