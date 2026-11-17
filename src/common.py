@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 from src.solvers.scip import backpack_scip
-# from src.solvers.gurobi import backpack_gurobi
+from src.solvers.gurobi import backpack_gurobi
 #Custo máximo para gastar com mochilas
 C_MAX = 1100
 
@@ -40,15 +40,33 @@ relics = np.array([
     [4,15,4,30000]
 ])
 
-def split_random(limit, n_elements):
-    result = [1] * n_elements
+# def split_random(limit, n_elements):
+#     result = [1] * n_elements
     
-    for i in range(limit-n_elements):
-        index = random.randrange(n_elements)
-        result[index]+=1
+#     for i in range(limit-n_elements):
+#         index = random.randrange(n_elements)
+#         result[index]+=1
     
-    return result
+#     return result
       
+def split_random(limit, n_elements):
+    if n_elements == 1:
+        return [limit]
+
+    rand_num = random.randrange(n_elements, limit - n_elements)
+    print(rand_num)
+
+    if n_elements == 2:
+        return [rand_num, limit - rand_num]
+
+    else:
+        first = split_random(rand_num, n_elements // 2)
+        print(first)
+        last = split_random(limit - rand_num, n_elements // 2 + n_elements % 2)
+        print(last)
+
+        return first + last
+        
 # sed is the seed, for the randomness to be reproducible
 # num is the number of backpacks
 def create_attr(sed, num):
@@ -61,6 +79,7 @@ def create_attr(sed, num):
     quantidade | Peso Máx (Kg) | Volume Max (L) | Preço (R$)
     """
     backpack_quants = split_random(num, 5)
+    print(backpack_quants)
     backpacks =np.array( [
         [backpack_quants[0],20,25,120],
         [backpack_quants[1],25,10,135],
@@ -87,5 +106,5 @@ def create_attr(sed, num):
     return (backpacks, relics)
 
 #backpack_gurobi(backpacks,relics)
-# backpack_gurobi(*create_attr(1, 500))
-backpack_scip(*create_attr(1, 500))
+backpack_gurobi(*create_attr(1, 100))
+backpack_scip(*create_attr(1, 100))

@@ -1,5 +1,4 @@
 from pyscipopt import Model, quicksum
-# from src.common import * 
 import json
 
 # Colunas das mochilas
