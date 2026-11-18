@@ -108,6 +108,7 @@ def create_attr(sed, num):
 
 backpack_gurobi(backpacks,relics)
 backpack_scip(backpacks,relics)
+
 backpacks , relics = create_attr(1, 100)
 backpack_gurobi(backpacks,relics)
 backpack_scip(backpacks,relics)
@@ -115,6 +116,10 @@ backpack_scip(backpacks,relics)
 backpacks , relics = create_attr(1, 500)
 backpack_gurobi(backpacks,relics)
 backpack_scip(backpacks, relics)
+
+backpacks , relics = create_attr(1, 800)
+backpack_gurobi(backpacks,relics)
+backpack_scip(backpacks,relics)
 
 backpacks , relics = create_attr(1, 1000)
 backpack_gurobi(backpacks,relics)

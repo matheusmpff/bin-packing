@@ -162,13 +162,14 @@ def backpack_scip(backpacks, relics):
         resultado["tempo"] = model.getSolvingTime()
 
         # model.hideOutput()
-        # tempo_soma = 0.0
-        # for i in range(10):
-        #     model.freeTransform()
-        #     model.optimize()
-        #     tempo_soma += model.getSolvingTime()
+        tempo_soma = 0.0
+        if(model.getStatus() != "timelimit"):
+            for i in range(5):
+                model.freeTransform()
+                model.optimize()
+                tempo_soma += model.getSolvingTime()
 
-        # resultado["tempo"] = tempo_soma / 10
+            resultado["tempo"] = tempo_soma / 5
 
         with open(f"resultado_scip_{total_relics}.json","w",encoding="utf-8") as arquivo:
             json.dump(resultado,arquivo,indent=4,ensure_ascii=False)

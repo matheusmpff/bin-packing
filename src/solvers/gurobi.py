@@ -162,6 +162,15 @@ def backpack_gurobi(backpacks, relics):
         resultado["gap"] = model.MIPGap
         resultado["tempo"] = model.Runtime
         
+        tempo_soma = 0.0
+        if model.status != GRB.TIME_LIMIT:
+            for i in range(5):
+                model.Params.OutputFlag = 0
+                model.reset()
+                model.optimize()
+                tempo_soma += model.Runtime
+            resultado["tempo"] = tempo_soma/5
+        
         #Escreve o resultado no arquivo JSON
         
         with open(f"resultado_gurobi_{total_relics}.json","w",encoding="utf-8") as arquivo:
